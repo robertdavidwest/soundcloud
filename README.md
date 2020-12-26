@@ -8,6 +8,8 @@ Download from http://example.com/FIXME.
 
 ## Usage
 
+Collect and aggregate user data from Soundcloud using Clojure. 
+
 FIXME: explanation
 
     $ java -jar soundcloud-0.1.0-standalone.jar [args]
