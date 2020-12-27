@@ -1,0 +1,4 @@
+BEGIN; 
+CREATE DATABASE soundcloud_stats;
+COMMIT;
+ROLLBACK;
