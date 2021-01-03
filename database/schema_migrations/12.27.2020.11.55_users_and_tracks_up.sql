@@ -1,10 +1,10 @@
-jEGIN; 
+BEGIN; 
 
 CREATE SCHEMA soundcloud; 
 
 CREATE TABLE soundcloud.users (
     user_id serial PRIMARY KEY,
-    soundcloud_user_id TEXT, -- id in json
+    soundcloud_user_id INTEGER UNIQUE, -- id in json
     username TEXT, 
     first_name TEXT,
     full_name TEXT, 
@@ -13,7 +13,7 @@ CREATE TABLE soundcloud.users (
     avatar_url TEXT, 
     city TEXT, 
     country_code TEXT,
-    created_at TIMESTAMP, 
+    created_at TEXT, 
     description TEXT, 
     urn TEXT,
     uri TEXT,
@@ -26,7 +26,7 @@ CREATE TABLE soundcloud.users_timeline (
    users_timeline_id serial PRIMARY KEY,
    user_id serial, 
 
-   pull_date TIMESTAMP,
+   pull_date TIMESTAMP DEFAULT NOW(),
 
    comments_count INTEGER, 
    followers_count INTEGER, 
@@ -48,7 +48,7 @@ CREATE TABLE soundcloud.tracks (
     duration INTEGER, 
     track_format TEXT, 
     tag_list TEXT, 
-    created_at TIMESTAMP,
+    created_at TEXT,
     
     steamable BOOLEAN,     
     commentable BOOLEAN, 
@@ -68,7 +68,7 @@ CREATE TABLE soundcloud.tracks_timeline (
     track_timeline_id serial PRIMARY KEY,
     track_id serial,
     user_id serial,
-    pull_date TIMESTAMP,
+    pull_date TEXT,
     comment_count INTEGER,
     playback_count INTEGER,
     likes_count INTEGER, 
