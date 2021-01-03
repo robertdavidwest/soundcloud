@@ -73,6 +73,40 @@
     (sql/insert-row :soundcloud.users_timeline user-info)))
 
 
+(defn add-track-to-db
+  [track-info]
+  (let [query (str/join ["select user_id from soundcloud.users where soundcloud_user_id="
+                         (get track-info "user_id")])
+        user_id (:user_id (first (sql/query query)))
+        track-fields [
+                      "id"
+                      "title"
+                      "genre"
+                      "duration"
+                      "track_format"
+                      "tag_list"
+                      "created_at"
+                      "steamable"
+                      "commentable"
+                      "downloadable"
+                      "had_downloads_left"
+                      "description"
+                      "urn"
+                      "uri"
+                      "permalink"
+                      "permalink_url"
+                      "artwork_url"
+                      "waveform_url"]
+        track-info (-> track-info
+                       (select-keys track-fields)
+                       (set/rename-keys {"id" "soundcloud_track_id"})
+                       (assoc "user_id" user_id))]
+    (if (nil? user_id)
+      (throw (Exception. "Cannot add track info to soundcloud.tracks if user not in
+                          soundcloud.users table")))
+    (sql/insert-row :soundcloud.tracks track-info)))
+
+
 (defn send-user-data-to-db
   [user-info]
   (if (user-not-in-db user-info)
@@ -88,5 +122,9 @@
         all-user-info (map #(api/get-user-info % client-id) user-ids)]
         (map send-user-data-to-db all-user-info))
 
-  ;(def tracks (api/get-tracks user-num client-id))
+  (def client-id (:client-id config))
+  (def user-id (:user-id (first (:users config))))
+  (def tracks (api/get-tracks user-id client-id))
+  (add-track-to-db (first tracks))
+
  )
