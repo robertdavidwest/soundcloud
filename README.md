@@ -16,21 +16,21 @@ Soundcloud seem to have an open API. If you look at the requests on a soundcloud
 2. In `soundcloud_stats` run the SQL script `database/schema_migrations/12.27.2020.11.55_users_and_tracks_up.sql` to create the database tables.
 3. Create a `config.edn` file and store it in `src/soundcloud/config.edn` with the following format
     
-      config.edn 
-      # ----------------
-      {
-          :client-id "ABCDEF"
-          :users [{
-                    :username "some-user"
-                    :user-id "1234"
-                   } {
-                    :username "another-user"
-                    :user-id "5678"}
-                  ...]
-	  }
-
-
-2. Run `-main` and all user and user tracks information will be scraped and stored in the database
+    ```
+    config.edn 
+    # ----------------
+    {
+        :client-id "ABCDEF"
+        :users [{
+                  :username "some-user"
+                  :user-id "1234"
+                 } {
+                  :username "another-user"
+                  :user-id "5678"}
+                ...]
+	}
+    ```
+4. Run `-main` and all user and user tracks information will be scraped and stored in the database.
 
 FIXME: explanation
 
