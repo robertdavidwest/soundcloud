@@ -81,6 +81,47 @@
     (sql/insert-row :soundcloud.users_timeline user-info)))
 
 
+(defn count-quotes
+  [s]
+  (let [freq (get (frequencies s) \")
+        freq (if (nil? freq) 0 freq)]
+    freq))
+
+
+(defn clean-char
+  [x]
+  (let [c (get x 0)
+        quote-count (get x 1)
+        in-quotes (odd? quote-count)
+        cleaned-c (cond
+                       (and (= c \space) (true? in-quotes)) "_"
+                       (= c \") ""
+                       :else c)]
+    cleaned-c))
+
+
+(defn convert-tag-str-to-tag-list
+  [tag-str]
+  (let [_range (range 1 (+ 1 (count tag-str)))
+        subsets (map #(subs tag-str 0 % ) _range)
+        _counts (map count-quotes subsets)
+        inputs (map vector tag-str _counts)
+        clean-chars (map clean-char inputs)
+        clean-tag-str (str/join clean-chars)
+        tag-list (str/split clean-tag-str #" ")]
+    tag-list))
+
+
+(defn add-track-tags-to-db
+  [tag-list soundcloud_track_id]
+  (let [query (str/join ["select track_id from soundcloud.tracks where soundcloud_track_id="
+                         soundcloud_track_id])
+        track_id (:track_id (first (sql/query query)))
+        tag-payload (map #(assoc {} :track_id track_id :tag %) tag-list)]
+    (sql/insert-rows :soundcloud.track_tags tag-payload)
+    ))
+
+
 (defn add-track-to-db
   [track-info]
   (let [query (str/join ["select user_id from soundcloud.users where soundcloud_user_id="
@@ -105,6 +146,8 @@
                       "permalink_url"
                       "artwork_url"
                       "waveform_url"]
+        tag-str (get track-info "tag_list")
+        tag-list (convert-tag-str-to-tag-list tag-str)
         track-info (-> track-info
                        (select-keys track-fields)
                        (set/rename-keys {"id" "soundcloud_track_id"})
@@ -112,7 +155,8 @@
     (if (nil? user_id)
       (throw (Exception. "Cannot add track info to soundcloud.tracks if user not in
                           soundcloud.users table")))
-    (sql/insert-row :soundcloud.tracks track-info)))
+    (sql/insert-row :soundcloud.tracks track-info)
+    (add-track-tags-to-db tag-list (get track-info "soundcloud_track_id"))))
 
 
 (defn add-track-timeline-to-db
@@ -145,8 +189,7 @@
   [user-info]
   (if (user-not-in-db (get user-info "id"))
     (add-user-to-db user-info))
-  (add-user-timeline-to-db user-info)
-  "added user")
+  (add-user-timeline-to-db user-info))
 
 
 (defn send-track-data-to-db
@@ -162,8 +205,8 @@
 
 (defn send-tracks-data-to-db
   [tracks]
-  (map send-track-data-to-db tracks)
-  "added tracks")
+  (for [t tracks]
+    (send-track-data-to-db t)))
 
 
 (defn scrape-and-write-user-data 
