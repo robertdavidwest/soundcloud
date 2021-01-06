@@ -17,6 +17,11 @@
   (j/insert! db table-key payload))
 
 
+(defn insert-rows
+  [table-key payload]
+  (j/insert-multi! db table-key payload))
+
+
 ;; example code 
 
 (comment 
