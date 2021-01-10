@@ -1,7 +1,6 @@
 (ns soundcloud.core
   (:require [clojure.edn :as edn])
   (:require [clojure.java.io :as io])
-  (:require [soundcloud.vanilla-scrape :as scrape])
   (:require [soundcloud.api :as api])
   (:require [clojure.string :as str])
   (:require [soundcloud.db :as sql])
