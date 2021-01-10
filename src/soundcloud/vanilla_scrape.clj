@@ -17,19 +17,12 @@
 (defn extract-metric-from-description
   "For a given metric, extract that metric from the 
   user description"
-  [metric description-list]
-    (->> description-list
-         (map (partial extract-data-from-str metric))
-         (remove nil?)
-         first))
-
-(defn convert-description-to-map
-  [username description]
-  (let [description-list (str/split description #"\.")
-        followers (extract-metric-from-description "Followers" description-list)
-        tracks (extract-metric-from-description "Tracks" description-list)
-        metrics {:username username :tracks tracks :followers followers}]
-    metrics))
+  [metric description]
+    (let [description-list (str/split description #"\.")]
+          (->> description-list
+              (map (partial extract-data-from-str metric))
+              (remove nil?)
+              first)))
 
 (defn get-user-info
   [username]
@@ -37,9 +30,29 @@
         url (str base-url username)
         page (html/html-resource (URL. url))
         data (html/select page [:html :head :meta])
-        description (first (for [x data
+        desc (first (for [x data
                                 :let [item (get-in x [:attrs :content])]
-                                :when (= (get-in x [:attrs :name]) "description")] 
+                                :when (= (get-in x [:attrs :name]) 
+                                         "description")] 
                            item))
-        user-info (convert-description-to-map username description)]
-    user-info))
+        followers (extract-metric-from-description "Followers" desc)
+        tracks (extract-metric-from-description "Tracks" desc)
+        metrics {:username username :tracks tracks :followers followers}]
+    metrics))
+
+(defn get-user-id
+  [username]
+  (let [base-url "https://soundcloud.com/"
+        url (str base-url username)
+        page (html/html-resource (URL. url))
+        data (html/select page [:html :head :meta])
+        has-user-id (first (for [x data
+                                :let [item (get-in x [:attrs :content])]
+                                :when (= (get-in x [:attrs :property]) 
+                                      "twitter:app:url:googleplay")]
+                             item))
+        user-id (last (str/split has-user-id #":"))]
+    user-id))
+
+
+
